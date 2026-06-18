@@ -346,7 +346,7 @@
         <!-- Sign-off Footer -->
         <div class="footer">
             <div>Start Date: <input type="date" class="fill-blank" id="start-date" style="font-size: 0.9rem; padding:0;"></div>
-            <div>Signature: <input type="text" class="fill-blank" style="width: 150px; font-family: 'Playfair Display', serif; font-style: italic;"></div>
+            <div>Signature: <input type="text" class="fill-blank" id="signature-input" style="width: 150px; font-family: 'Playfair Display', serif; font-style: italic;"></div>
         </div>
     </div>
 
@@ -361,7 +361,7 @@
         let progressState = JSON.parse(localStorage.getItem('100DaysProgress')) || Array(TOTAL_DAYS).fill(false);
 
         // Inputs to save
-        const inputsToSave = ['identity-input', 'trigger-input', 'action-input', 'time-input', 'start-date'];
+        const inputsToSave = ['identity-input', 'trigger-input', 'action-input', 'time-input', 'start-date','signature-input'];
 
         function initializeTracker() {
             // Generate 100 nodes
