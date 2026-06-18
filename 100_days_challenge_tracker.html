@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100 Days Challenge Tracker</title>
+    
+    <!-- Google Fonts for typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Color Palette */
+            --bg-color: #f1f5f9;
+            --paper: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #4f46e5;      /* Indigo */
+            --accent-light: #e0e7ff;
+            --success: #10b981;    /* Emerald Green */
+            --border: #cbd5e1;
+            --milestone: #f59e0b;  /* Amber */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .a4-sheet {
+            background: var(--paper);
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .a4-sheet {
+                box-shadow: none;
+                border-radius: 0;
+                width: 100%;
+                height: 100%;
+                padding: 10mm; /* Adjust for printer margins */
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* Ensure inputs look like text when printed */
+            input::placeholder {
+                color: transparent;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .header p.subtitle {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        .psych-framework {
+            background: var(--accent-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        .psych-row {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-main);
+        }
+
+        .psych-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .psych-row strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Fill-in-the-blank inputs */
+        input.fill-blank {
+            border: none;
+            border-bottom: 2px dashed var(--text-muted);
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            color: var(--accent);
+            font-weight: 600;
+            padding: 0 0.5rem;
+            outline: none;
+            text-align: center;
+            width: auto;
+            min-width: 150px;
+            transition: border-color 0.2s;
+        }
+
+        input.fill-blank:focus {
+            border-bottom-color: var(--accent);
+        }
+
+        .rule-text {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 1rem;
+        }
+
+        .rule-text i {
+            color: var(--milestone);
+        }
+
+        .grid-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tracker-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 15px;
+            margin-top: 1rem;
+        }
+
+        .day-node {
+            aspect-ratio: 1;
+            border: 2px solid var(--border);
+            border-radius: 12px; /* Squircle look */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            background: white;
+            user-select: none;
+        }
+
+        .day-node:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.1);
+        }
+
+        .day-number {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            z-index: 2;
+        }
+
+        .check-icon {
+            opacity: 0;
+            position: absolute;
+            font-size: 1.2rem;
+            color: white;
+            transform: scale(0.5);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 3;
+        }
+
+        /* Completed State */
+        .day-node.completed {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        .day-node.completed .day-number {
+            opacity: 0; /* Hide number when checked */
+        }
+
+        .day-node.completed .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .day-node.milestone {
+            border-color: var(--milestone);
+            background-color: #fef3c7; /* light amber */
+        }
+        
+        .day-node.milestone .day-number {
+            color: #b45309; /* dark amber */
+        }
+
+        .day-node.milestone::after {
+            content: '\f005'; /* FontAwesome star */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            color: var(--milestone);
+            background: white;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            padding: 2px;
+            z-index: 4;
+        }
+
+        .footer {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Utility Controls (No Print) */
+        .controls {
+            position: absolute;
+            top: 20mm;
+            right: -80px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            background: var(--text-main);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+            background: var(--accent);
+        }
+
+        .btn-reset {
+            background: #ef4444; /* Red */
+        }
+        .btn-reset:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="a4-sheet">
+        
+        <!-- Action Buttons for the Web UI -->
+        <div class="controls no-print">
+            <button class="btn" onclick="window.print()" title="Save / Print as PDF">
+                <i class="fa-solid fa-print"></i>
+            </button>
+            <button class="btn btn-reset" onclick="resetTracker()" title="Reset Tracker">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+
+        <div class="header">
+            <h1>100 Days of Mastery</h1>
+            <p class="subtitle">"Consistency is the cheat code to learning anything."</p>
+        </div>
+
+        <!-- Psychological Framing Section -->
+        <div class="psych-framework">
+            <div class="psych-row">
+                <strong>1. Identity Shift:</strong> I am becoming a 
+                <input type="text" class="fill-blank" id="identity-input" placeholder="e.g. Full Stack Developer" style="width: 250px;">
+            </div>
+            
+            <div class="psych-row">
+                <strong>2. Habit Stacking:</strong> Every day, immediately after I 
+                <input type="text" class="fill-blank" id="trigger-input" placeholder="e.g. eat dinner" style="width: 200px;">, <br>
+                I will 
+                <input type="text" class="fill-blank" id="action-input" placeholder="e.g. code on my project" style="width: 250px;"> 
+                for at least <input type="text" class="fill-blank" id="time-input" placeholder="45" style="width: 50px;"> mins.
+            </div>
+
+            <div class="rule-text">
+                <i class="fa-solid fa-shield-heart"></i>
+                <span><strong>The Forgiveness Rule:</strong> If I miss a day, I forgive myself. But I will <em>never</em> miss two days in a row.</span>
+            </div>
+        </div>
+
+        <!-- The Grid -->
+        <div class="grid-container">
+            <div class="tracker-grid" id="grid">
+                <!-- Grid nodes will be injected here via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Sign-off Footer -->
+        <div class="footer">
+            <div>Start Date: <input type="date" class="fill-blank" id="start-date" style="font-size: 0.9rem; padding:0;"></div>
+            <div>Signature: <input type="text" class="fill-blank" style="width: 150px; font-family: 'Playfair Display', serif; font-style: italic;"></div>
+        </div>
+    </div>
+
+    <script>
+        const gridElement = document.getElementById('grid');
+        const TOTAL_DAYS = 100;
+        
+        // Define milestone days to trigger visual rewards
+        const milestones = [25, 50, 75, 100];
+
+        // Retrieve saved state from Local Storage
+        let progressState = JSON.parse(localStorage.getItem('100DaysProgress')) || Array(TOTAL_DAYS).fill(false);
+
+        // Inputs to save
+        const inputsToSave = ['identity-input', 'trigger-input', 'action-input', 'time-input', 'start-date'];
+
+        function initializeTracker() {
+            // Generate 100 nodes
+            for (let i = 0; i < TOTAL_DAYS; i++) {
+                const dayNumber = i + 1;
+                
+                // Create Node Elements
+                const node = document.createElement('div');
+                node.className = 'day-node';
+                node.dataset.index = i;
+
+                // Add milestone styling
+                if (milestones.includes(dayNumber)) {
+                    node.classList.add('milestone');
+                    node.title = `Milestone: Day ${dayNumber}!`;
+                }
+
+                // Restore completed state
+                if (progressState[i]) {
+                    node.classList.add('completed');
+                }
+
+                // Add Number Label
+                const numberLabel = document.createElement('span');
+                numberLabel.className = 'day-number';
+                numberLabel.innerText = dayNumber;
+
+                // Add Checkmark Icon
+                const checkIcon = document.createElement('i');
+                checkIcon.className = 'fa-solid fa-check check-icon';
+
+                // Assemble
+                node.appendChild(numberLabel);
+                node.appendChild(checkIcon);
+
+                // Add Click Event
+                node.addEventListener('click', () => toggleDay(i, node));
+
+                gridElement.appendChild(node);
+            }
+
+            // Restore Input Values
+            inputsToSave.forEach(id => {
+                const el = document.getElementById(id);
+                const savedVal = localStorage.getItem(`100Days_${id}`);
+                if (savedVal) el.value = savedVal;
+
+                // Save on change
+                el.addEventListener('input', (e) => {
+                    localStorage.setItem(`100Days_${id}`, e.target.value);
+                });
+            });
+        }
+
+        function toggleDay(index, nodeElement) {
+            // Toggle logical state
+            progressState[index] = !progressState[index];
+            
+            // Toggle visual state
+            if (progressState[index]) {
+                nodeElement.classList.add('completed');
+                // Optional: Add a tiny pop animation effect via JS if desired, 
+                // but CSS handles the main transition nicely.
+            } else {
+                nodeElement.classList.remove('completed');
+            }
+
+            // Save to Local Storage
+            localStorage.setItem('100DaysProgress', JSON.stringify(progressState));
+        }
+
+        function resetTracker() {
+            if(confirm("Are you sure you want to reset all 100 days? This cannot be undone.")) {
+                progressState = Array(TOTAL_DAYS).fill(false);
+                localStorage.setItem('100DaysProgress', JSON.stringify(progressState));
+                
+                // Reset visual nodes
+                document.querySelectorAll('.day-node').forEach(node => {
+                    node.classList.remove('completed');
+                });
+            }
+        }
+
+        // Run initialization on load
+        initializeTracker();
+    </script>
+</body>
+</html>
